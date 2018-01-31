@@ -32,7 +32,8 @@ def compute_accuracy(trueY, predictY):
 
 data = np.load('data.npy').astype(np.int32)
 target = np.load('target.npy').astype(np.int32)
-target = np.array(map(lambda x: x[1], target))
+target = np.array(map(lambda x: x[1], target)) # Gender
+# target = np.array(map(lambda x: x[0], target)) # Person
 dataSize = len(data)
 
 np.random.seed(521)
@@ -46,10 +47,11 @@ testData, testTarget = data[randIdx[train_partition:]], target[randIdx[train_par
 
 
 with tf.Session() as s:
-	k = 1
 	X = trainData
 
-	predictY = knn_predict(s, X, testData, trainTarget, k=k)
-	accuracy = s.run(compute_accuracy(testTarget, predictY))
-	print accuracy
+	for k in [1,5,10,25,50,100,200]:
+		predictY = knn_predict(s, X, testData, trainTarget, k=k)
+		accuracy = s.run(compute_accuracy(testTarget, predictY))
+		print "K=%s, Accuracy=%s" % (k, accuracy)
+		print "\n"
 
