@@ -13,22 +13,23 @@ def knn_predict(X, pt, Y, k=1):
 	dist = sqr_distance(X, pt)
 	_, idx = tf.nn.top_k(-1*tf.transpose(dist), k=k)
 	gather = tf.gather(Y, idx)
-        rows = tf.unstack(gather)
-        prediction = []
-        for row in rows:
-            _,_,count = tf.unique_with_counts(row)
-            max_count = tf.reduce_max(count)
-            true_idx = tf.where(tf.equal(count, max_count))
-            val = tf.gather(row, true_idx)
-            prediction.append(tf.reduce_min(tf.squeeze(val, axis=1)))
 
+	counts = [
+		tf.count_nonzero(gather-0, axis=1),
+		tf.count_nonzero(gather-1, axis=1),
+		tf.count_nonzero(gather-2, axis=1),
+		tf.count_nonzero(gather-3, axis=1),
+		tf.count_nonzero(gather-4, axis=1),
+		tf.count_nonzero(gather-5, axis=1)
+	]
+	prediction = tf.argmin(counts, axis=0)
 	return prediction
 
 def compute_accuracy(trueY, predictY):
-	with tf.control_dependencies([tf.equal(tf.shape(trueY), tf.shape(predictY))]):
-		eq = tf.equal(trueY, predictY)
-		accuracy = tf.reduce_mean(tf.cast(eq, tf.float32))
-		return accuracy
+	eq = tf.equal(trueY, predictY)
+	accuracy = tf.reduce_mean(tf.cast(eq, tf.float32))
+	return accuracy
+
 
 data = np.load('data.npy').astype(np.int32)
 target = np.load('target.npy').astype(np.int64)
@@ -44,10 +45,13 @@ train_partition = int(dataSize*0.8)
 trainData, trainTarget = data[randIdx[:train_partition]], target[randIdx[:train_partition]]
 testData, testTarget = data[randIdx[train_partition:]], target[randIdx[train_partition:]]
 
+
+
 with tf.Session() as s:
 	X = trainData
 
-	for k in [1, 5,10,25,50,100,200]:
+	for k in [1,5,10,25,50,100,200]:
 		accuracy = s.run(compute_accuracy(testTarget, knn_predict(X, testData, trainTarget, k=k)))
-		print "K=%s, Accuracy=%s\n" % (k, accuracy)
+		print "K=%s, Accuracy=%s" % (k, accuracy)
+		print "\n"
 

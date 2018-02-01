@@ -47,12 +47,12 @@ with tf.Session() as s:
 		predictY = tf.reduce_mean(knn_matrix(X, trueX, trainTarget, k=k), axis=1)
 		predictY = s.run(predictY)
 
-		fig = plt.figure()
-		ax = fig.add_subplot(111)
-		plt.title('K = %s' % k)
-		plt.xlabel('x')
-		plt.ylabel('y')
-		ax.plot(trueX, predictY, '-', trainData, trainTarget, 'ro')
+		#fig = plt.figure()
+		#ax = fig.add_subplot(111)
+		#plt.title('K = %s' % k)
+		#plt.xlabel('x')
+		#plt.ylabel('y')
+		#ax.plot(trueX, predictY, '-', trainData, trainTarget, 'ro')
 
 		# Train
 		mse = s.run(compute_mse(X, trainData, trainTarget, k))
