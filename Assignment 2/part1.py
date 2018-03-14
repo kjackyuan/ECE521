@@ -32,39 +32,49 @@ W = tf.Variable(tf.zeros([num_feature, num_label]))
 b = tf.Variable(tf.zeros([num_label]))
 y = tf.matmul(x, W) + b
 
-
-weight_decay = 0.0
-loss = 0.5*tf.reduce_mean(tf.squared_difference(y, y_true)) + 0.5*weight_decay*tf.reduce_sum(tf.square(W))
-
-
-learning_rate = 0.005
-train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
+for learning_rate in [0.005]:
+    for batch_size in [500]:
+        for weight_decay in [0.0]:
+            loss = 0.5*tf.reduce_mean(tf.squared_difference(y, y_true)) + 0.5*weight_decay*tf.reduce_sum(tf.square(W))
+            train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
 
 
-batch_size = 3500
-epoch_ratio = int(train_size/batch_size)
-iteration = 2000
+            delta = tf.abs(y_true - y)
+            correct_prediction = tf.cast(tf.less(delta, 0.5), tf.int32)
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-loss_history = []
+            epoch_ratio = int(train_size/batch_size)
+            iteration = 20000
 
-with tf.Session() as s:
-    tf.global_variables_initializer().run()
-    
-    for step in xrange(iteration):
-        offset = (step*batch_size) % num_label
-        
-        batch_data = trainData[offset:(offset + batch_size), :]
-        batch_target = trainTarget[offset:(offset + batch_size)]
-    
-        train_step.run(feed_dict={x: batch_data, y_true: batch_target})
+            loss_history = []
 
-        if step%epoch_ratio==0:
-            loss_history.append(s.run(loss, feed_dict={x: trainData, y_true: trainTarget}))
+            with tf.Session() as s:
+                tf.global_variables_initializer().run()
+                tf.initialize_all_variables().run()
 
-    
-    print s.run(loss, feed_dict={x: trainData, y_true: trainTarget})
+                for step in xrange(iteration):
+                    offset = (step*batch_size) % num_label
+                    
+                    batch_data = trainData[offset:(offset + batch_size)]
+                    batch_target = trainTarget[offset:(offset + batch_size)]
+                
+                    train_step.run(feed_dict={x: batch_data, y_true: batch_target})
 
+                    if step%epoch_ratio==0:
+                        randIndx = np.arange(len(trainData))
+                        np.random.shuffle(randIndx)
+                        trainData, trainTarget = trainData[randIndx], trainTarget[randIndx]
+                        loss_history.append(s.run(loss, feed_dict={x: trainData, y_true: trainTarget}))
 
-    plt.plot(range(1,len(loss_history)+1), loss_history, '-')
-    plt.show()
+                
+                print 'mse: %s' % s.run(loss, feed_dict={x: trainData, y_true: trainTarget})
+                print 'training accuracy: %s' % accuracy.eval({x: trainData, y_true: trainTarget})
+                print 'validation accuracy: %s' % accuracy.eval({x: validData, y_true: validTarget})
+                print 'test accuracy: %s' % accuracy.eval({x: testData, y_true: testTarget})
 
+                plt.plot(range(1,len(loss_history)+1), loss_history, '-', label='weight decay: %s' % weight_decay)
+
+plt.xlabel('epoch')
+plt.ylabel('mse')
+plt.legend()
+plt.show()
