@@ -59,7 +59,7 @@ with tf.Session() as s:
     testTarget_onehot = s.run(tf.one_hot(testTarget, num_label))
     
     for step in xrange(iteration):
-        offset = (step*batch_size) % num_label
+        offset = (step*batch_size) % train_size
         
         batch_data = trainData[offset:(offset + batch_size), :]
         batch_target = trainTarget_onehot[offset:(offset + batch_size)]
