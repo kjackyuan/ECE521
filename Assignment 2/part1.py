@@ -53,7 +53,7 @@ for learning_rate in [0.005]:
                 tf.initialize_all_variables().run()
 
                 for step in xrange(iteration):
-                    offset = (step*batch_size) % num_label
+                    offset = (step*batch_size) % train_size
                     
                     batch_data = trainData[offset:(offset + batch_size)]
                     batch_target = trainTarget[offset:(offset + batch_size)]
