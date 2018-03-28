@@ -86,7 +86,7 @@ for learning_rate in [0.005, 0.001, 0.0001]:
         validTarget_onehot = s.run(tf.one_hot(validTarget, num_label))
 
         for step in xrange(iteration):
-            offset = (step*batch_size) % num_label
+            offset = (step*batch_size) % train_size
             
             batch_data = trainData[offset:(offset + batch_size)]
             batch_target = trainTarget_onehot[offset:(offset + batch_size)]
